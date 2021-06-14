@@ -1,25 +1,53 @@
 package service
 
-import "github.com/codepd/tasmac"
+import (
+	"context"
+	"time"
+
+	"github.com/codepd/tasmac"
+	"github.com/google/uuid"
+)
 
 type rs struct {
-	r tasmac.ReviewRespository
+	r tasmac.ReviewStore
 }
 
-func NewReviewService(r tasmac.ReviewRespository) tasmac.ReviewService {
+func NewReviewService(r tasmac.ReviewStore) tasmac.ReviewService {
 	return &rs{r: r}
 }
 
-func (s *rs) AddBeerReview(r tasmac.ReviewAdd) {
-	_ = s.r.AddReview(r)
-}
-
-func (s *rs) AddSampleReviews(r []tasmac.ReviewAdd) {
-	for _, rr := range r {
-		_ = s.r.AddReview(rr) // error handling omitted for simplicity
+func (s *rs) AddBeerReview(ctx context.Context, r tasmac.ReviewAdd) error {
+	if err := s.r.AddReview(ctx, tasmac.Review{
+		ID:        uuid.New().String(),
+		BeerID:    r.BeerID,
+		FirstName: r.FirstName,
+		LastName:  r.LastName,
+		Score:     r.Score,
+		Text:      r.Text,
+		Created:   time.Now(),
+	}); err != nil {
+		return err
 	}
+	return nil
 }
 
-func (s *rs) GetBeerReviews(beerID string) []tasmac.Review {
-	return s.r.GetAllReviews(beerID)
+func (s *rs) AddSampleReviews(ctx context.Context, r []tasmac.ReviewAdd) error {
+	for _, rr := range r {
+		if err := s.r.AddReview(ctx, tasmac.Review{
+			ID:        uuid.New().String(),
+			BeerID:    rr.BeerID,
+			FirstName: rr.FirstName,
+			LastName:  rr.LastName,
+			Score:     rr.Score,
+			Text:      rr.Text,
+			Created:   time.Now(),
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *rs) GetBeerReviews(ctx context.Context, beerID string) ([]tasmac.Review, error) {
+	return s.r.GetAllReviews(ctx, beerID)
 }

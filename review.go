@@ -1,6 +1,9 @@
 package tasmac
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type Review struct {
 	ID        string    `json:"id"`
@@ -22,14 +25,14 @@ type ReviewAdd struct {
 
 // ReviewService provides reviewing operations.
 type ReviewService interface {
-	AddBeerReview(ReviewAdd)
-	AddSampleReviews([]ReviewAdd)
-	GetBeerReviews(string) []Review
+	AddBeerReview(ctx context.Context, r ReviewAdd) error
+	AddSampleReviews(ctx context.Context, r []ReviewAdd) error
+	GetBeerReviews(ctx context.Context, beerID string) ([]Review, error)
 }
 
-type ReviewRespository interface {
-	// GetAllReviews returns a list of all reviews for a given beer ID.
-	GetAllReviews(string) []Review
+type ReviewStore interface {
 	// AddReview saves a given review.
-	AddReview(ReviewAdd) error
+	AddReview(ctx context.Context, r Review) error
+	// GetAllReviews returns a list of all reviews for a given beer ID.
+	GetAllReviews(ctx context.Context, beerID string) ([]Review, error)
 }

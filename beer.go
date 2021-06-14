@@ -1,6 +1,9 @@
 package tasmac
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type Beer struct {
 	ID        string    `json:"id"`
@@ -20,17 +23,17 @@ type BeerAdd struct {
 
 // BeerService provides beer and review listing operations.
 type BeerService interface {
-	AddBeer(...BeerAdd) error
-	AddSampleBeers([]BeerAdd)
-	GetBeer(string) (Beer, error)
-	GetBeers() []Beer
+	AddBeer(ctx context.Context, b BeerAdd) error
+	AddSampleBeers(ctx context.Context, b []BeerAdd) error
+	GetBeer(ctx context.Context, id string) (*Beer, error)
+	GetBeers(ctx context.Context) ([]Beer, error)
 }
 
-type BeerRepository interface {
+type BeerStore interface {
 	// AddBeer saves a given beer to the repository.
-	AddBeer(BeerAdd) error
+	AddBeer(ctx context.Context, b *Beer) error
 	// GetAllBeers returns all beers saved in storage.
-	GetAllBeers() []Beer
+	GetAllBeers(ctx context.Context) ([]Beer, error)
 	// GetBeer returns the beer with given ID.
-	GetBeer(string) (Beer, error)
+	GetBeer(ctx context.Context, id string) (*Beer, error)
 }
